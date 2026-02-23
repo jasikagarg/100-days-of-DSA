@@ -1,0 +1,131 @@
+/* Problem: Merge Two Sorted Linked Lists - Implement using linked list with dynamic memory allocation.
+
+Input:
+- First line: integer n
+- Second line: n space-separated integers (first list)
+- Third line: integer m
+- Fourth line: m space-separated integers (second list)
+
+Output:
+- Print the merged linked list elements, space-separated
+
+Example:
+Input:
+5
+10 20 30 40 50
+4
+15 25 35 45
+
+Output:
+10 15 20 25 30 35 40 45 50
+
+Explanation:
+Compare nodes of both lists, append smaller to result, continue until all nodes are merged.*/
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure definition
+typedef struct node {
+    int data;
+    struct node *next;
+} node;
+
+// Function to create new node
+node* createNode(int value) {
+    node* newNode = (node*)malloc(sizeof(node));
+    newNode->data = value;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Insert at end
+node* insertAtEnd(node* head, int value) {
+    node* newNode = createNode(value);
+
+    if (head == NULL)
+        return newNode;
+
+    node* temp = head;
+    while (temp->next != NULL)
+        temp = temp->next;
+
+    temp->next = newNode;
+    return head;
+}
+
+// Merge two sorted lists
+node* mergeLists(node* head1, node* head2) {
+    node* result = NULL;
+    node* tail = NULL;
+
+    while (head1 != NULL && head2 != NULL) {
+        node* newNode;
+
+        if (head1->data <= head2->data) {
+            newNode = createNode(head1->data);
+            head1 = head1->next;
+        } else {
+            newNode = createNode(head2->data);
+            head2 = head2->next;
+        }
+
+        if (result == NULL) {
+            result = newNode;
+            tail = newNode;
+        } else {
+            tail->next = newNode;
+            tail = newNode;
+        }
+    }
+
+    // Add remaining elements
+    while (head1 != NULL) {
+        tail->next = createNode(head1->data);
+        tail = tail->next;
+        head1 = head1->next;
+    }
+
+    while (head2 != NULL) {
+        tail->next = createNode(head2->data);
+        tail = tail->next;
+        head2 = head2->next;
+    }
+
+    return result;
+}
+
+// Print list
+void printList(node* head) {
+    while (head != NULL) {
+        printf("%d ", head->data);
+        head = head->next;
+    }
+}
+
+int main() {
+    int n, m, value;
+    node* head1 = NULL;
+    node* head2 = NULL;
+
+    // Input first list
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &value);
+        head1 = insertAtEnd(head1, value);
+    }
+
+    // Input second list
+    scanf("%d", &m);
+    for (int i = 0; i < m; i++) {
+        scanf("%d", &value);
+        head2 = insertAtEnd(head2, value);
+    }
+
+    // Merge
+    node* mergedHead = mergeLists(head1, head2);
+
+    // Output
+    printList(mergedHead);
+
+    return 0;
+}
