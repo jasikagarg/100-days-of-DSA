@@ -1,0 +1,96 @@
+/*Problem: Implement topological sorting using in-degree array and queue (Kahnâ€™s Algorithm)*/
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure
+struct Node {
+    int vertex;
+    struct Node* next;
+};
+
+// Create node
+struct Node* createNode(int v) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = v;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Queue
+int queue[1000], front = 0, rear = 0;
+
+void enqueue(int x) {
+    queue[rear++] = x;
+}
+
+int dequeue() {
+    return queue[front++];
+}
+
+int isEmpty() {
+    return front == rear;
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    struct Node* adj[n];
+    int indegree[n];
+
+    // Initialize
+    for (int i = 0; i < n; i++) {
+        adj[i] = NULL;
+        indegree[i] = 0;
+    }
+
+    int u, v;
+
+    // Input edges
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d", &u, &v);
+
+        struct Node* newNode = createNode(v);
+        newNode->next = adj[u];
+        adj[u] = newNode;
+
+        indegree[v]++; // important
+    }
+
+    // Add all nodes with indegree 0
+    for (int i = 0; i < n; i++) {
+        if (indegree[i] == 0) {
+            enqueue(i);
+        }
+    }
+
+    int count = 0;
+
+    printf("Topological Order: ");
+
+    while (!isEmpty()) {
+        int current = dequeue();
+        printf("%d ", current);
+        count++;
+
+        struct Node* temp = adj[current];
+
+        while (temp != NULL) {
+            int neighbor = temp->vertex;
+            indegree[neighbor]--;
+
+            if (indegree[neighbor] == 0) {
+                enqueue(neighbor);
+            }
+
+            temp = temp->next;
+        }
+    }
+
+    // Cycle check
+    if (count != n) {
+        printf("\nCycle exists! Topological sort not possible.\n");
+    }
+
+    return 0;
+}
