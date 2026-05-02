@@ -1,0 +1,147 @@
+/*Problem: Given weighted graph with non-negative edges, compute shortest path from source using priority queue.*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX 1000
+
+// Node in adjacency list
+struct Node {
+    int vertex;
+    int weight;
+    struct Node* next;
+};
+
+// Create node
+struct Node* createNode(int v, int w) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = v;
+    newNode->weight = w;
+    newNode->next = NULL;
+    return newNode;
+}
+
+/* ---------- Min Priority Queue ---------- */
+struct PQ {
+    int vertex;
+    int dist;
+} pq[MAX];
+
+int size = 0;
+
+void swap(int i, int j) {
+    struct PQ temp = pq[i];
+    pq[i] = pq[j];
+    pq[j] = temp;
+}
+
+void push(int v, int d) {
+    int i = size++;
+    pq[i].vertex = v;
+    pq[i].dist = d;
+
+    while (i > 0 && pq[i].dist < pq[(i - 1) / 2].dist) {
+        swap(i, (i - 1) / 2);
+        i = (i - 1) / 2;
+    }
+}
+
+struct PQ pop() {
+    struct PQ root = pq[0];
+    pq[0] = pq[--size];
+
+    int i = 0;
+    while (1) {
+        int smallest = i;
+        int l = 2 * i + 1;
+        int r = 2 * i + 2;
+
+        if (l < size && pq[l].dist < pq[smallest].dist)
+            smallest = l;
+        if (r < size && pq[r].dist < pq[smallest].dist)
+            smallest = r;
+
+        if (smallest != i) {
+            swap(i, smallest);
+            i = smallest;
+        } else break;
+    }
+
+    return root;
+}
+
+int isEmpty() {
+    return size == 0;
+}
+
+/* ---------- Dijkstra ---------- */
+void dijkstra(int n, struct Node* adj[], int src) {
+    int dist[n];
+
+    for (int i = 0; i < n; i++) {
+        dist[i] = INT_MAX;
+    }
+
+    dist[src] = 0;
+    push(src, 0);
+
+    while (!isEmpty()) {
+        struct PQ curr = pop();
+        int u = curr.vertex;
+
+        struct Node* temp = adj[u];
+
+        while (temp != NULL) {
+            int v = temp->vertex;
+            int w = temp->weight;
+
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                push(v, dist[v]);
+            }
+
+            temp = temp->next;
+        }
+    }
+
+    printf("Shortest distances from source %d:\n", src);
+    for (int i = 0; i < n; i++) {
+        printf("%d -> %d\n", i, dist[i]);
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    struct Node* adj[n];
+
+    for (int i = 0; i < n; i++) {
+        adj[i] = NULL;
+    }
+
+    int u, v, w;
+
+    // Input weighted edges
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &u, &v, &w);
+
+        struct Node* newNode = createNode(v, w);
+        newNode->next = adj[u];
+        adj[u] = newNode;
+
+        // If undirected graph, uncomment:
+        /*
+        newNode = createNode(u, w);
+        newNode->next = adj[v];
+        adj[v] = newNode;
+        */
+    }
+
+    int src;
+    scanf("%d", &src);
+
+    dijkstra(n, adj, src);
+
+    return 0;
+}
